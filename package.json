@@ -1,0 +1,19 @@
+{
+  "name": "wakeword-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@picovoice/porcupine-node": "^4.0.1",
+    "dotenv": "^17.2.3",
+    "mic": "^2.1.2",
+    "nodemon": "^3.1.11"
+  }
+}
