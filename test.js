@@ -1,6 +1,6 @@
 import { Porcupine } from "@picovoice/porcupine-node";
 import mic from "mic";
-import { beep } from "./beep.js";
+import { beep, boop } from "./beep.js";
 import { exec } from "child_process";
 import { transcribe } from "./transcribe.js";
 import { recordAudio } from "./record.js";
@@ -55,7 +55,14 @@ stream.on("data", async (data) => {
         try {
           while (true) {
             // 1️⃣ Record user speech
-            await recordAudio();
+            const result = await recordAudio();
+
+            if (result.reason === "max_idle") {
+              console.log("🔁 Idle timeout — returning to wake word mode");
+              console.log("🎤 Listening... say your wake word");
+              boop();
+              break; // exit conversation loop
+            }
 
             // 2️⃣ Convert audio
             await new Promise((resolve, reject) => {
@@ -72,9 +79,10 @@ stream.on("data", async (data) => {
             // 4️⃣ Exit condition
             if (isEndWord(text)) {
               console.log("👋 Ending session");
-              process.exit();
+              console.log("🎤 Listening... say your wake word");
+              break; // exit conversation loop
             }
-
+            
             console.log("🎙 Listening for next command… (no wake word needed)");
           }
         } catch (err) {

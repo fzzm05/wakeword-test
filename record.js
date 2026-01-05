@@ -16,31 +16,26 @@ export function recordAudio() {
     micInputStream.pipe(outputFileStream);
 
     // ---- STATE ----
-    let listenStartTime = null;
-    let lastVoiceTime = null;
     let startedSpeaking = false;
     let hasStopped = false;
+    let lastVoiceTime = null;
+    let bufferStartTime = Date.now();
+    let bufferLogged = false;
+    let voiceStart = null;
 
-    // ---- TUNING ----
-    const INITIAL_GRACE_TIME = 3000; // ⏳ 3 seconds to think
-    const SILENCE_TIMEOUT = 5000;    // ⏱ 5 sec after speech
-    const VOICE_THRESHOLD = 0.01;
+    // ---- CONFIG ----
+    const INITIAL_BUFFER = 3000;       // 3s grace before silence logic
+    const SILENCE_TIMEOUT = 5000;      // 5s after speech ends
+    const MAX_IDLE_TIMEOUT = 15000;    // 15s max wait if user never speaks
+    const VOICE_THRESHOLD = 0.005;      // voice energy threshold
+    const SUSTAINED_SPEECH_MS = 200;   // must sustain voice for 200ms
+
+    console.log("🎙 Listening… you can pause before speaking");
 
     micInputStream.on("data", (chunk) => {
       if (hasStopped) return;
 
-      // Start clock ONLY when mic is truly live
-      if (!listenStartTime) {
-        listenStartTime = Date.now();
-        console.log("🎧 Mic live — take your time...");
-      }
-
       const now = Date.now();
-
-      // ---- GRACE PHASE ----
-      if (!startedSpeaking && now - listenStartTime < INITIAL_GRACE_TIME) {
-        return; // ignore everything
-      }
 
       // ---- VOICE ENERGY ----
       let sum = 0;
@@ -50,16 +45,33 @@ export function recordAudio() {
       }
       const rms = Math.sqrt(sum / (chunk.length / 2));
 
-      // ---- SPEECH DETECTION ----
-      if (rms > VOICE_THRESHOLD) {
-        if (!startedSpeaking) {
-          console.log("🗣 Speech started");
+      // ---- BUFFER LOGGING ----
+      if (!bufferLogged && now - bufferStartTime >= INITIAL_BUFFER) {
+        bufferLogged = true;
+      }
+
+      // ---- POTENTIAL SPEECH DETECTION ----
+      if (!startedSpeaking && rms > VOICE_THRESHOLD) {
+        if (!voiceStart) voiceStart = now;
+        else if (now - voiceStart >= SUSTAINED_SPEECH_MS) {
           startedSpeaking = true;
+          lastVoiceTime = now;
+          console.log(
+            now - bufferStartTime < INITIAL_BUFFER
+              ? "🗣 Speech started immediately (during buffer)"
+              : "🗣 Speech started (after buffer)"
+          );
         }
+      } else if (!startedSpeaking) {
+        voiceStart = null; // reset if no sustained voice before speech
+      }
+
+      // ---- UPDATE LAST VOICE TIME ----
+      if (startedSpeaking && rms > VOICE_THRESHOLD) {
         lastVoiceTime = now;
       }
 
-      // ---- END OF SPEECH ----
+      // ---- END OF SPEECH DETECTION ----
       if (
         startedSpeaking &&
         lastVoiceTime &&
@@ -69,13 +81,21 @@ export function recordAudio() {
         console.log("🛑 End of speech");
         micInstance.stop();
       }
+
+      // ---- MAX IDLE (no speech detected at all) ----
+      if (!startedSpeaking && now - bufferStartTime > MAX_IDLE_TIMEOUT) {
+        hasStopped = true;
+        console.log("🛑 Max idle reached — no speech detected");
+        micInstance.stop();
+      }
     });
 
     micInputStream.on("stopComplete", () => {
-      resolve();
+      resolve({
+        reason: startedSpeaking ? "speech_end" : "max_idle"
+      });
     });
 
-    console.log("🎙 Listening… you can pause before speaking");
     micInstance.start();
   });
 }
