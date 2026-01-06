@@ -10,7 +10,18 @@ export function isEndWord(text) {
     "thank you that's it",
     "exit",
     "bye",
-    "goodbye"
+    "goodbye",
+    "go away",
+    "shut down",
+    "terminate",
+    "end session",
+    "no more",
+    "that's enough",
+    "you can stop now",
+    "that's it",
+    "I'm done",
+    "finish",
+    "all done",
   ];
 
   // Remove punctuation at the end
@@ -18,7 +29,7 @@ export function isEndWord(text) {
 
   // If sentence is too long, assume it's NOT an exit intent
   if (clean.split(" ").length > 6) {
-    console.log(clean.split(" "));
+    // console.log(clean.split(" "));
     return false;
   }
 

@@ -16,6 +16,7 @@ export function recordAudio() {
     micInputStream.pipe(outputFileStream);
 
     // ---- STATE ----
+    let stopReason = "speech_end";
     let startedSpeaking = false;
     let hasStopped = false;
     let lastVoiceTime = null;
@@ -79,6 +80,7 @@ export function recordAudio() {
       ) {
         hasStopped = true;
         console.log("🛑 End of speech");
+        stopReason = "speech_end";
         micInstance.stop();
       }
 
@@ -86,13 +88,14 @@ export function recordAudio() {
       if (!startedSpeaking && now - bufferStartTime > MAX_IDLE_TIMEOUT) {
         hasStopped = true;
         console.log("🛑 Max idle reached — no speech detected");
+        stopReason = "max_idle";
         micInstance.stop();
       }
     });
 
     micInputStream.on("stopComplete", () => {
       resolve({
-        reason: startedSpeaking ? "speech_end" : "max_idle"
+        reason: stopReason
       });
     });
 

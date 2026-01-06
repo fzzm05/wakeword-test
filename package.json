@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@picovoice/porcupine-node": "^4.0.1",
+    "acrcloud": "^1.4.0",
     "dotenv": "^17.2.3",
     "mic": "^2.1.2",
     "nodemon": "^3.1.11"

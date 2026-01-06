@@ -5,6 +5,8 @@ import { exec } from "child_process";
 import { transcribe } from "./transcribe.js";
 import { recordAudio } from "./record.js";
 import {isEndWord} from "./helpers/isEndWord.js";
+import { recordMusic } from "./recordMusic.js";
+import { identifyMusic } from "./identifyMusic.js";
 
 const ACCESS_KEY = process.env.PICOVOICE_ACCESS_KEY;
 if (!ACCESS_KEY) {
@@ -55,7 +57,9 @@ stream.on("data", async (data) => {
         try {
           while (true) {
             // 1️⃣ Record user speech
+            micInstance.pause();
             const result = await recordAudio();
+            micInstance.resume();
 
             if (result.reason === "max_idle") {
               console.log("🔁 Idle timeout — returning to wake word mode");
@@ -75,6 +79,29 @@ stream.on("data", async (data) => {
             // 3️⃣ Transcribe
             const text = await transcribe("command_fixed.wav");
             console.log("🧠 You said:", text);
+
+            const t = text.toLowerCase();
+            const wantsSongId =
+              t.includes("what song") ||
+              t.includes("which song") ||
+              t.includes("identify this song") ||
+              t.includes("what is playing");
+
+            // 3️⃣a Music identification
+            if (wantsSongId) {
+              micInstance.pause();
+              await recordMusic(10);
+              micInstance.resume();
+              const song = await identifyMusic();
+
+              if (!song) {
+                console.log("❌ Couldn't identify the song");
+              } else {
+                console.log(
+                  `🎵 ${song.title} by ${song.artist} (${song.confidence}%)`
+                );
+              }
+            }
 
             // 4️⃣ Exit condition
             if (isEndWord(text)) {
