@@ -2,7 +2,7 @@ import fs from "fs";
 import { acr } from "./acrcloud.js";
 
 export async function identifyMusic() {
-  const buffer = fs.readFileSync("music.wav");
+  const buffer = await fs.promises.readFile("music.wav");
 
   const result = await acr.identify(buffer);
   if (!result.metadata || !result.metadata.music) {

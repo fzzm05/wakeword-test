@@ -83,6 +83,7 @@ stream.on("data", async (data) => {
             const t = text.toLowerCase();
             const wantsSongId =
               t.includes("what song") ||
+              t.includes("what music") ||
               t.includes("which song") ||
               t.includes("identify this song") ||
               t.includes("what is playing");
@@ -92,6 +93,7 @@ stream.on("data", async (data) => {
               micInstance.pause();
               await recordMusic(10);
               micInstance.resume();
+              console.log("🎧 Identifying music...");
               const song = await identifyMusic();
 
               if (!song) {

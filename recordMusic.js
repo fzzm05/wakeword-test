@@ -13,8 +13,12 @@ export function recordMusic(seconds = 10) {
 
     const stream = micInstance.getAudioStream();
     const output = fs.createWriteStream("music.wav");
-
     stream.pipe(output);
+
+    stream.on('stopComplete', () => {
+      output.end(); // Ensure the write stream is closed
+      resolve();
+    });
 
     micInstance.start();
     console.log("🎶 Listening for music...");
@@ -22,7 +26,7 @@ export function recordMusic(seconds = 10) {
     setTimeout(() => {
       micInstance.stop();
       console.log("🛑 Music capture complete");
-      resolve();
+      // resolve();
     }, seconds * 1000);
   });
 }
