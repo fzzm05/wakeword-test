@@ -12,7 +12,7 @@ export function recordAudio() {
     });
 
     const micInputStream = micInstance.getAudioStream();
-    const outputFileStream = fs.createWriteStream("command.wav");
+    const outputFileStream = fs.createWriteStream("./recordings/command.wav");
     micInputStream.pipe(outputFileStream);
 
     // ---- STATE ----

@@ -71,13 +71,13 @@ stream.on("data", async (data) => {
             // 2️⃣ Convert audio
             await new Promise((resolve, reject) => {
               exec(
-                "ffmpeg -y -i command.wav -ar 16000 -ac 1 -c:a pcm_s16le command_fixed.wav",
+                "ffmpeg -y -i ./recordings/command.wav -ar 16000 -ac 1 -c:a pcm_s16le ./recordings/command_fixed.wav",
                 (err) => (err ? reject(err) : resolve())
               );
             });
 
             // 3️⃣ Transcribe
-            const text = await transcribe("command_fixed.wav");
+            const text = await transcribe("./recordings/command_fixed.wav");
             console.log("🧠 You said:", text);
 
             const t = text.toLowerCase();
@@ -86,7 +86,10 @@ stream.on("data", async (data) => {
               t.includes("what music") ||
               t.includes("which song") ||
               t.includes("identify this song") ||
-              t.includes("what is playing");
+              t.includes("what is playing") ||
+              t.includes("identify this music") ||
+              t.includes("identify the song") ||
+              t.includes("identify the music");
 
             // 3️⃣a Music identification
             if (wantsSongId) {
