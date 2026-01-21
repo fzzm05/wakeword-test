@@ -28,8 +28,8 @@ export function recordAudio() {
     const INITIAL_BUFFER = 3000;       // 3s grace before silence logic
     const SILENCE_TIMEOUT = 5000;      // 5s after speech ends
     const MAX_IDLE_TIMEOUT = 15000;    // 15s max wait if user never speaks
-    const VOICE_THRESHOLD = 0.005;      // voice energy threshold
-    const SUSTAINED_SPEECH_MS = 200;   // must sustain voice for 200ms
+    const VOICE_THRESHOLD = 0.01;      // voice energy threshold
+    const SUSTAINED_SPEECH_MS = 500;   // must sustain voice for 200ms
 
     console.log("🎙 Listening… you can pause before speaking");
 

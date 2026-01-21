@@ -21,7 +21,7 @@ export function recordMusic(seconds = 10) {
     });
 
     micInstance.start();
-    // console.log("🎶 Listening for music...");
+    console.log("🎶 Listening for music...");
 
     setTimeout(() => {
       micInstance.stop();
